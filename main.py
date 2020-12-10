@@ -14,7 +14,7 @@ StyleSheet = '''
     
 }
 QWidget {
-    background-color: red;
+    background-color: rgb(45, 45, 45);
 }
 #exitPushButton {
     min-height: 50px;
@@ -47,18 +47,19 @@ class ClockWidget(QWidget):
     def __init__(self, parent=None):
         super(ClockWidget, self).__init__(parent)
         self.setWindowTitle("PyQt时钟")
-        # self.resize(400, 400)
+        self.setWindowIcon(QIcon("image/clock.png"))
+
         self.timeLabel = QLabel(self, objectName='timeLabel')
         self.dateTimeLabel = QLabel(self, objectName='dateTimeLabel')
         self.lifeLabel = QLabel(self, objectName='lifeLabel')
         self.backend = BackendThread()
-        self.exitPushButton = QPushButton(QIcon('./image/cc-exit.png'), '', objectName='exitPushButton')
-        # Init QSystemTrayIcon
+        self.exitPushButton = QPushButton(QIcon('image/cc-exit.png'), '', objectName='exitPushButton')
         self.tray_icon = QSystemTrayIcon(self)
 
         self.init_ui()
 
     def init_ui(self):
+        # layout
         layout = QVBoxLayout()
         layout.setContentsMargins(50, 50, 50, 50)
         layout.addWidget(self.lifeLabel, 0, Qt.AlignRight)
@@ -67,16 +68,16 @@ class ClockWidget(QWidget):
         layout.addWidget(self.dateTimeLabel, 0, Qt.AlignCenter)
         layout.addStretch()
         layout.addWidget(self.exitPushButton, 0, Qt.AlignRight)
-
         self.setLayout(layout)
 
         self.lifeLabel.setText("                永远相信\n美好的事情即将发生")
         self.lifeLabel.setAlignment(Qt.AlignRight)
 
-        self.tray_icon.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
-        show_action = QAction("Show", self)
-        quit_action = QAction("Exit", self)
-        hide_action = QAction("Hide", self)
+        # 托盘
+        self.tray_icon.setIcon(QIcon("image/clock.png"))
+        show_action = QAction(QIcon("image/show.png"), "显示", self)
+        quit_action = QAction(QIcon("image/exit_tray"), "退出", self)
+        hide_action = QAction(QIcon("image/hide.png"), "隐藏", self)
         show_action.triggered.connect(self.show)
         hide_action.triggered.connect(self.hide)
         quit_action.triggered.connect(qApp.quit)
@@ -86,6 +87,8 @@ class ClockWidget(QWidget):
         tray_menu.addAction(quit_action)
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
+
+        # 事件绑定
         self.exitPushButton.clicked.connect(self.exit_app)
         self.exitPushButton.setIconSize(QSize(25, 25))
         self.backend.update_date.connect(self.handle_display)
@@ -98,7 +101,7 @@ class ClockWidget(QWidget):
     def exit_app(self):
         self.hide()
         self.tray_icon.showMessage(
-            "PyQt 桌面小时钟",
+            "桌面小时钟",
             "程序被最小化到托盘",
             QSystemTrayIcon.Information,
             2000
@@ -118,9 +121,24 @@ class BackendThread(QThread):
             self.sleep(1)
 
 
+def showAllScreen():
+    primary_screen = QApplication.primaryScreen()
+    screens = QApplication.screens()
+    for screen in screens:
+        if screen is not primary_screen:
+            auxiliary_screen = screen
+            break
+        else:
+            auxiliary_screen = None
+    return primary_screen, auxiliary_screen
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     clock = ClockWidget()
     clock.setStyleSheet(StyleSheet)
+    # primary_screen, auxiliary_screen = showAllScreen()
+    # clock.setGeometry(primary_screen.geometry())
+    #clock.setGeometry(auxiliary_screen.geometry())
     clock.showFullScreen()
     app.exec_()

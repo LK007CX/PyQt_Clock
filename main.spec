@@ -30,4 +30,5 @@ exe = EXE(pyz,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False )
+          console=False,
+          icon='C:\Users\Administrator\Documents\GitHub\PyQt_Clock\image\clock.ico')
